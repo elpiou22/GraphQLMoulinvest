@@ -122,7 +122,7 @@ function buildLineUpdate(parameters: PurchaseOrderBlocParameters): Record<string
     return data;
 }
 
-export async function purchaseOrderBloc(
+async function executePurchaseOrderBloc(
     context: Context,
     parameters: PurchaseOrderBlocParameters,
 ): Promise<PurchaseOrderBlocResult> {
@@ -161,6 +161,23 @@ export async function purchaseOrderBloc(
                 ];
             }
         } else if (xylolinkLineId) {
+            const missingParameters = [
+                !clean(parameters.supplierCode) && 'supplierCode',
+                !clean(parameters.orderUnit) && 'orderUnit',
+                parameters.expectedReceiptDate === undefined && 'expectedReceiptDate',
+                parameters.grossPrice === undefined && 'grossPrice',
+            ].filter(Boolean);
+
+            if (missingParameters.length > 0) {
+                return {
+                    created: 0,
+                    message:
+                        `Ligne Xylolink introuvable : ${xylolinkLineId}. ` +
+                        `Pour l'ajouter, renseignez : ${missingParameters.join(', ')}.`,
+                    purchaseOrderId: existingPurchaseOrderId,
+                };
+            }
+
             const productCode = clean(parameters.productCode) || DEFAULT_PRODUCT;
             const quantity = parameters.quantity ?? (1 as decimal);
             const lineData = buildNewLine(parameters, productCode, quantity);
@@ -221,4 +238,19 @@ export async function purchaseOrderBloc(
         message: `Commande d'achat ${purchaseOrderId} creee avec succes.`,
         purchaseOrderId,
     };
+}
+
+export async function purchaseOrderBloc(
+    context: Context,
+    parameters: PurchaseOrderBlocParameters,
+): Promise<PurchaseOrderBlocResult> {
+    try {
+        return await executePurchaseOrderBloc(context, parameters);
+    } catch (error) {
+        return {
+            created: 0,
+            message: error instanceof Error ? error.message : String(error),
+            purchaseOrderId: clean(parameters.existingPurchaseOrderId),
+        };
+    }
 }
