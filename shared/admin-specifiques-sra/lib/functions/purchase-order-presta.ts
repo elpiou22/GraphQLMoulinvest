@@ -1,243 +1,268 @@
-import * as sageX3MasterData from "@sage/x3-master-data";
-import * as sageX3Purchasing from "@sage/x3-purchasing";
-import { Context, DateValue, decimal } from "@sage/xtrem-core";
+import * as sageX3MasterData from '@sage/x3-master-data';
+import * as sageX3Purchasing from '@sage/x3-purchasing';
+import { Context, DateValue, decimal } from '@sage/xtrem-core';
 
 export interface PurchaseOrderPrestaParameters {
-  existingPurchaseOrderId?: string;
-  xylolinkOrderNumber: string;
-  orderDate: DateValue;
-  supplierCode: string;
-  cuttingId: string;
-  xylolinkLineId: string;
-  category: string;
-  orderUnit: string;
-  quantity: decimal;
-  expectedReceiptDate: DateValue;
-  grossPrice: decimal;
+    existingPurchaseOrderId?: string;
+    xylolinkOrderNumber?: string;
+    orderDate?: DateValue;
+    supplierCode?: string;
+    cuttingId?: string;
+    xylolinkLineId?: string;
+    category?: string;
+    orderUnit?: string;
+    quantity?: decimal;
+    expectedReceiptDate?: DateValue;
+    grossPrice?: decimal;
 }
 
 export interface PurchaseOrderPrestaResult {
-  created?: number;
-  message?: string;
-  purchaseOrderId?: string;
-  resolvedProductCode?: string;
+    created?: number;
+    message?: string;
+    purchaseOrderId?: string;
+    resolvedProductCode?: string;
 }
 
-const COMPANY = "02";
-const PURCHASE_SITE = "0201";
-const RECEIPT_ADDRESS = "SS1";
-const CURRENCY = "EUR";
-const TAX = "001";
+const COMPANY = '02';
+const PURCHASE_SITE = '0201';
+const RECEIPT_ADDRESS = 'SS1';
+const CURRENCY = 'EUR';
+const TAX = '001';
 
 const PRODUCT_BY_CATEGORY: Record<string, string> = {
-  harvesting: "FOR-ABATTAGE",
-  forwarding: "FOR-DEBARDAGE",
-  transport: "FOR-TRANSPORT",
+    harvesting: 'FOR-ABATTAGE',
+    forwarding: 'FOR-DEBARDAGE',
+    transport: 'FOR-TRANSPORT',
 };
 
 function clean(value?: string): string {
-  return value?.trim() ?? "";
+    return value?.trim() ?? '';
+}
+
+function requiredString(value: string | undefined, name: string): string {
+    const result = clean(value);
+    if (!result) {
+        throw new Error(`Parametre obligatoire pour la creation : ${name}`);
+    }
+    return result;
+}
+
+function requiredValue<T>(value: T | undefined, name: string): T {
+    if (value === undefined || value === null) {
+        throw new Error(`Parametre obligatoire pour la creation : ${name}`);
+    }
+    return value;
+}
+
+async function resolveProductCode(
+    context: Context,
+    categoryValue: string | undefined,
+    required: boolean,
+): Promise<string> {
+    const category = clean(categoryValue).toLowerCase();
+
+    if (!category && !required) {
+        return '';
+    }
+
+    const resolvedProductCode = PRODUCT_BY_CATEGORY[category];
+    if (!resolvedProductCode) {
+        throw new Error(
+            `Categorie invalide : ${categoryValue ?? ''}. Valeurs acceptees : harvesting, forwarding, transport.`,
+        );
+    }
+
+    const productExists = await context.exists(sageX3MasterData.nodes.Product, { code: resolvedProductCode });
+
+    if (!productExists) {
+        throw new Error(`Article X3 introuvable : ${resolvedProductCode}`);
+    }
+
+    return resolvedProductCode;
+}
+
+function buildHeaderUpdate(parameters: PurchaseOrderPrestaParameters): Record<string, any> {
+    const data: Record<string, any> = { _x3Transaction: 'ALL' };
+    const orderNumber = clean(parameters.xylolinkOrderNumber);
+    const supplierCode = clean(parameters.supplierCode);
+    const cuttingId = clean(parameters.cuttingId);
+
+    if (parameters.orderDate !== undefined) data.orderDate = parameters.orderDate;
+    if (orderNumber) data.internalOrderReference = orderNumber;
+    if (supplierCode) data.orderFromSupplier = supplierCode;
+    if (cuttingId) data.project = cuttingId;
+
+    return data;
+}
+
+function buildLineUpdate(parameters: PurchaseOrderPrestaParameters, resolvedProductCode: string): Record<string, any> {
+    const data: Record<string, any> = {};
+    const supplierCode = clean(parameters.supplierCode);
+    const orderUnit = clean(parameters.orderUnit);
+
+    if (supplierCode) data.orderFromSupplier = supplierCode;
+    if (resolvedProductCode) data.product = resolvedProductCode;
+    if (orderUnit) {
+        data.orderUnit = orderUnit;
+        data.purchaseUnit = orderUnit;
+        data.stockUnit = orderUnit;
+    }
+    if (parameters.quantity !== undefined) {
+        data.quantityInOrderUnitOrdered = parameters.quantity;
+        data.quantityInStockUnitOrdered = parameters.quantity;
+    }
+    if (parameters.expectedReceiptDate !== undefined) {
+        data.expectedReceiptDate = parameters.expectedReceiptDate;
+    }
+    if (parameters.grossPrice !== undefined) {
+        data.grossPrice = parameters.grossPrice;
+        data.netPrice = parameters.grossPrice;
+    }
+
+    return data;
+}
+
+function buildNewLine(parameters: PurchaseOrderPrestaParameters, resolvedProductCode: string): Record<string, any> {
+    const supplierCode = requiredString(parameters.supplierCode, 'supplierCode');
+    const xylolinkLineId = requiredString(parameters.xylolinkLineId, 'xylolinkLineId');
+    const orderUnit = requiredString(parameters.orderUnit, 'orderUnit');
+    const quantity = requiredValue(parameters.quantity, 'quantity');
+    const expectedReceiptDate = requiredValue(parameters.expectedReceiptDate, 'expectedReceiptDate');
+    const grossPrice = requiredValue(parameters.grossPrice, 'grossPrice');
+
+    return {
+        company: COMPANY,
+        purchaseSite: PURCHASE_SITE,
+        orderFromSupplier: supplierCode,
+        yxylolin: xylolinkLineId,
+        product: resolvedProductCode,
+        productType: 'standard' as const,
+        purchaseType: 'purchase' as const,
+        orderUnit,
+        purchaseUnit: orderUnit,
+        stockUnit: orderUnit,
+        orderUnitToPurchaseUnitConversionFactor: 1,
+        quantityInOrderUnitOrdered: quantity,
+        quantityInStockUnitOrdered: quantity,
+        expectedReceiptDate,
+        receiptSite: PURCHASE_SITE,
+        receiptAddress: RECEIPT_ADDRESS,
+        grossPrice,
+        netPrice: grossPrice,
+    };
 }
 
 export async function purchaseOrderPresta(
-  context: Context,
-  parameters: PurchaseOrderPrestaParameters,
+    context: Context,
+    parameters: PurchaseOrderPrestaParameters,
 ): Promise<PurchaseOrderPrestaResult> {
-  const existingPurchaseOrderId = clean(
-    parameters.existingPurchaseOrderId,
-  );
+    const existingPurchaseOrderId = clean(parameters.existingPurchaseOrderId);
+    const xylolinkLineId = clean(parameters.xylolinkLineId);
+    let resolvedProductCode = '';
 
-  const xylolinkLineId = clean(parameters.xylolinkLineId);
-  const category = clean(parameters.category).toLowerCase();
+    try {
+        if (existingPurchaseOrderId) {
+            resolvedProductCode = await resolveProductCode(context, parameters.category, false);
 
-  const resolvedProductCode =
-    PRODUCT_BY_CATEGORY[category];
+            const purchaseOrder = await context.tryRead(
+                sageX3Purchasing.nodes.PurchaseOrder,
+                { id: existingPurchaseOrderId },
+                { forUpdate: true },
+            );
 
-  if (!resolvedProductCode) {
-    return {
-      created: 0,
-      message:
-        `Categorie invalide : ${parameters.category}. ` +
-        "Valeurs acceptees : harvesting, forwarding, transport.",
-      purchaseOrderId: existingPurchaseOrderId,
-      resolvedProductCode: "",
-    };
-  }
+            if (!purchaseOrder) {
+                throw new Error(`Commande d'achat introuvable : ${existingPurchaseOrderId}`);
+            }
 
-  const productExists = await context.exists(
-    sageX3MasterData.nodes.Product,
-    { code: resolvedProductCode },
-  );
+            const headerData = buildHeaderUpdate(parameters);
+            let existingLine: sageX3Purchasing.nodes.PurchaseOrderLine | undefined;
 
-  if (!productExists) {
-    return {
-      created: 0,
-      message:
-        `Article X3 introuvable : ${resolvedProductCode}`,
-      purchaseOrderId: existingPurchaseOrderId,
-      resolvedProductCode,
-    };
-  }
+            if (xylolinkLineId) {
+                existingLine = await purchaseOrder.purchaseOrderLines.takeOne(
+                    async line => clean(await line.$.getValue<string>('yxylolin')) === xylolinkLineId,
+                );
+            }
 
-  const lineData = {
-    company: COMPANY,
-    purchaseSite: PURCHASE_SITE,
-    orderFromSupplier: parameters.supplierCode,
+            if (existingLine) {
+                const changedValues = buildLineUpdate(parameters, resolvedProductCode);
 
-    yxylolin: xylolinkLineId,
+                if (Object.keys(changedValues).length > 0) {
+                    headerData.purchaseOrderLines = [
+                        {
+                            _action: 'update',
+                            _id: await existingLine._id,
+                            ...changedValues,
+                        },
+                    ];
+                }
+            } else if (xylolinkLineId) {
+                if (!resolvedProductCode) {
+                    resolvedProductCode = await resolveProductCode(context, parameters.category, true);
+                }
+                const lineData = buildNewLine(parameters, resolvedProductCode);
+                headerData.purchaseOrderLines = [
+                    {
+                        _action: 'create',
+                        ...lineData,
+                        taxes: [{ denormalizedIndex: 1, tax: TAX }],
+                    },
+                ];
+            }
 
-    product: resolvedProductCode,
-    productType: "standard" as const,
-    purchaseType: "purchase" as const,
+            await purchaseOrder.$.set(headerData as any);
+            await purchaseOrder.$.save();
 
-    orderUnit: parameters.orderUnit,
-    purchaseUnit: parameters.orderUnit,
-    stockUnit: parameters.orderUnit,
-    orderUnitToPurchaseUnitConversionFactor: 1,
-
-    quantityInOrderUnitOrdered: parameters.quantity,
-    quantityInStockUnitOrdered: parameters.quantity,
-
-    expectedReceiptDate: parameters.expectedReceiptDate,
-    receiptSite: PURCHASE_SITE,
-    receiptAddress: RECEIPT_ADDRESS,
-
-    grossPrice: parameters.grossPrice,
-    netPrice: parameters.grossPrice,
-  };
-
-  try {
-    /*
-     * MODIFICATION
-     */
-    if (existingPurchaseOrderId) {
-const purchaseOrder = await context.tryRead(
-  sageX3Purchasing.nodes.PurchaseOrder,
-  { id: existingPurchaseOrderId },
-  { forUpdate: true },
-);
-
-      if (!purchaseOrder) {
-        return {
-          created: 0,
-          message:
-            `Commande d'achat introuvable : ` +
-            existingPurchaseOrderId,
-          purchaseOrderId: existingPurchaseOrderId,
-          resolvedProductCode,
-        };
-      }
-
-      await purchaseOrder.$.set({
-        _x3Transaction: "ALL",
-        orderDate: parameters.orderDate,
-        internalOrderReference:
-          parameters.xylolinkOrderNumber,
-        orderFromSupplier: parameters.supplierCode,
-        project: parameters.cuttingId,
-        currency: CURRENCY,
-      } as any);
-
-      const purchaseOrderLines =
-        await purchaseOrder.purchaseOrderLines.toArray();
-
-      let existingLine:
-        | (typeof purchaseOrderLines)[number]
-        | undefined;
-
-      for (const line of purchaseOrderLines) {
-        const currentXylolinkLineId =
-          await line.$.getValue<string>("yxylolin");
-
-        if (
-          clean(currentXylolinkLineId) ===
-          xylolinkLineId
-        ) {
-          existingLine = line;
-          break;
+            return {
+                created: 0,
+                message: existingLine
+                    ? `Commande ${existingPurchaseOrderId} et ligne ${xylolinkLineId} modifiees avec succes.`
+                    : xylolinkLineId
+                      ? `Ligne ${xylolinkLineId} ajoutee a la commande ${existingPurchaseOrderId}.`
+                      : `Commande ${existingPurchaseOrderId} modifiee avec succes.`,
+                purchaseOrderId: existingPurchaseOrderId,
+                resolvedProductCode,
+            };
         }
-      }
 
-      if (existingLine) {
-        await existingLine.$.set(lineData as any);
-      } else {
-        await purchaseOrder.purchaseOrderLines.append({
-          ...lineData,
-          taxes: [
-            {
-              denormalizedIndex: 1,
-              tax: TAX,
-            },
-          ],
-        } as any);
-      }
+        resolvedProductCode = await resolveProductCode(context, parameters.category, true);
+        const orderDate = requiredValue(parameters.orderDate, 'orderDate');
+        const orderNumber = requiredString(parameters.xylolinkOrderNumber, 'xylolinkOrderNumber');
+        const supplierCode = requiredString(parameters.supplierCode, 'supplierCode');
+        const cuttingId = requiredString(parameters.cuttingId, 'cuttingId');
+        const lineData = buildNewLine(parameters, resolvedProductCode);
 
-      await purchaseOrder.$.save();
-
-      return {
-        created: 0,
-        message: existingLine
-          ? `Commande ${existingPurchaseOrderId} et ligne ` +
-            `${xylolinkLineId} modifiees avec succes.`
-          : `Ligne ${xylolinkLineId} ajoutee a la commande ` +
-            `${existingPurchaseOrderId}.`,
-        purchaseOrderId: existingPurchaseOrderId,
-        resolvedProductCode,
-      };
-    }
-
-    /*
-     * CREATION
-     */
-    const purchaseOrder = await context.create(
-      sageX3Purchasing.nodes.PurchaseOrder,
-      {
-        _x3Transaction: "ALL",
-
-        company: COMPANY,
-        purchaseSite: PURCHASE_SITE,
-        orderDate: parameters.orderDate,
-        internalOrderReference:
-          parameters.xylolinkOrderNumber,
-
-        orderFromSupplier: parameters.supplierCode,
-        project: parameters.cuttingId,
-        currency: CURRENCY,
-
-        purchaseOrderLines: [
-          {
-            ...lineData,
-            taxes: [
-              {
-                denormalizedIndex: 1,
-                tax: TAX,
-              },
+        const purchaseOrder = await context.create(sageX3Purchasing.nodes.PurchaseOrder, {
+            _x3Transaction: 'ALL',
+            company: COMPANY,
+            purchaseSite: PURCHASE_SITE,
+            orderDate,
+            internalOrderReference: orderNumber,
+            orderFromSupplier: supplierCode,
+            project: cuttingId,
+            currency: CURRENCY,
+            purchaseOrderLines: [
+                {
+                    ...lineData,
+                    taxes: [{ denormalizedIndex: 1, tax: TAX }],
+                },
             ],
-          },
-        ],
-      } as any,
-    );
+        } as any);
 
-    await purchaseOrder.$.save();
+        await purchaseOrder.$.save();
+        const purchaseOrderId = await purchaseOrder.id;
 
-    const purchaseOrderId = await purchaseOrder.id;
-
-    return {
-      created: 1,
-      message:
-        `Commande d'achat ${purchaseOrderId} creee avec succes.`,
-      purchaseOrderId,
-      resolvedProductCode,
-    };
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : String(error);
-
-    return {
-      created: 0,
-      message,
-      purchaseOrderId: existingPurchaseOrderId,
-      resolvedProductCode,
-    };
-  }
+        return {
+            created: 1,
+            message: `Commande d'achat ${purchaseOrderId} creee avec succes.`,
+            purchaseOrderId,
+            resolvedProductCode,
+        };
+    } catch (error) {
+        return {
+            created: 0,
+            message: error instanceof Error ? error.message : String(error),
+            purchaseOrderId: existingPurchaseOrderId,
+            resolvedProductCode,
+        };
+    }
 }

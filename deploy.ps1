@@ -29,16 +29,54 @@ function Invoke-CheckedCommand {
     }
 }
 
+function Resolve-GitExecutable {
+    $GitCommand = Get-Command "git.exe" -ErrorAction SilentlyContinue
+    if ($null -ne $GitCommand) {
+        return $GitCommand.Source
+    }
+
+    $GitHubDesktopRoot = Join-Path $env:LOCALAPPDATA "GitHubDesktop"
+    $BundledGit = Get-ChildItem -LiteralPath $GitHubDesktopRoot -Filter "git.exe" -Recurse -ErrorAction SilentlyContinue |
+        Where-Object { $_.FullName -match '\\resources\\app\\git\\cmd\\git\.exe$' } |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+
+    if ($null -ne $BundledGit) {
+        return $BundledGit.FullName
+    }
+
+    throw "Git est introuvable. Installez Git ou GitHub Desktop, puis relancez le script."
+}
+
 if (-not (Test-Path -LiteralPath $ProjectRoot -PathType Container)) {
     throw "Projet introuvable : $ProjectRoot"
 }
 
-Write-Host "[1/6] Generation du package..." -ForegroundColor Cyan
+Write-Host "[1/7] Mise a jour du projet depuis GitHub..." -ForegroundColor Cyan
 Push-Location $ProjectRoot
 try {
+    $GitExecutable = Resolve-GitExecutable
+    $GitChanges = & $GitExecutable status --porcelain
+    if ($LASTEXITCODE -ne 0) {
+        throw "Impossible de lire l'etat Git du projet."
+    }
+
+    if ($GitChanges) {
+        Write-Host $GitChanges
+        throw "Le projet contient des modifications locales. Committez-les ou annulez-les avant le deploiement."
+    }
+
+    Invoke-CheckedCommand -Executable $GitExecutable -Arguments @(
+        "pull",
+        "--ff-only",
+        "origin",
+        "main"
+    )
+
+    Write-Host "[2/7] Generation du package..." -ForegroundColor Cyan
     Invoke-CheckedCommand -Executable "npm.cmd" -Arguments @("run", "generate")
 
-    Write-Host "[2/6] Compilation TypeScript..." -ForegroundColor Cyan
+    Write-Host "[3/7] Compilation TypeScript..." -ForegroundColor Cyan
     Invoke-CheckedCommand -Executable "npx.cmd" -Arguments @(
         "tsc",
         "-p",
@@ -76,17 +114,17 @@ if ((Split-Path -Leaf $ResolvedTarget) -ine "admin-specifiques-sra") {
     throw "Securite : le dossier cible n'est pas admin-specifiques-sra."
 }
 
-Write-Host "[3/6] Nettoyage de $ResolvedTarget..." -ForegroundColor Cyan
+Write-Host "[4/7] Nettoyage de $ResolvedTarget..." -ForegroundColor Cyan
 Get-ChildItem -LiteralPath $ResolvedTarget -Force | ForEach-Object {
     Write-Host "  Suppression : $($_.Name)"
     Remove-Item -LiteralPath $_.FullName -Recurse -Force
 }
 
-Write-Host "[4/6] Copie du build et de package.json..." -ForegroundColor Cyan
+Write-Host "[5/7] Copie du build et de package.json..." -ForegroundColor Cyan
 Copy-Item -LiteralPath $BuildSource -Destination $ResolvedTarget -Recurse -Force
 Copy-Item -LiteralPath $PackageJsonSource -Destination $ResolvedTarget -Force
 
-Write-Host "[5/6] Verification du deploiement..." -ForegroundColor Cyan
+Write-Host "[6/7] Verification du deploiement..." -ForegroundColor Cyan
 $BuildTarget = Join-Path $ResolvedTarget "build"
 $PackageJsonTarget = Join-Path $ResolvedTarget "package.json"
 
@@ -102,7 +140,7 @@ Get-ChildItem -LiteralPath $ResolvedTarget -Force |
     Select-Object Name, Length, LastWriteTime |
     Format-Table -AutoSize
 
-Write-Host "[6/6] Redemarrage du service Sage X3 sur $ServerName..." -ForegroundColor Cyan
+Write-Host "[7/7] Redemarrage du service Sage X3 sur $ServerName..." -ForegroundColor Cyan
 $MatchingServices = @(
     Get-Service -ComputerName $ServerName -ErrorAction Stop |
         Where-Object {
