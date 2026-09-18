@@ -1,0 +1,198 @@
+# Xtrem X3 Simplified Developer Configuration
+# Minimal configuration for local X3 development with focus on SQL database connectivity
+# Replace placeholders with your specific local environment values
+
+# =============================================================================
+# BASIC XTREM CONFIGURATION
+# =============================================================================
+
+# User context for X3 operations - typically ADMIN for service accounts
+user: ADMIN
+
+# Deployment mode - 'development' enables debug features and verbose logging
+# Options: 'development' | 'production'
+deploymentMode: development
+
+# Storage configuration - set to true for external database storage (X3)
+# Enables proper connection pooling and transaction management
+storage:
+  managedExternal: true
+
+# CLI plugins configuration - extends command-line interface capabilities
+# Provides additional commands and tools for X3 development and management
+cli:
+  plugins: ['@sage/xtrem-cli-dev', '@sage/xtrem-cli-main', '@sage/xtrem-x3-cli-dev']
+
+# =============================================================================
+# LOGGING CONFIGURATION
+# =============================================================================
+
+# Comprehensive logging configuration following Xtrem patterns
+logs:
+  # Domain-specific logging levels
+  domains:
+    # X3 SQL Manager - connection pooling, query performance, X3-specific SQL
+    sage/xtrem-x3-sql-manager/sql:
+      level: verbose
+
+    # GraphQL operations - query parsing, resolver execution, schema operations
+    sage/xtrem-core/graphql:
+      level: info
+
+    # HTTP service operations - request/response, middleware, routing
+    sage/xtrem-service/http:
+      level: info
+
+    # X3 Gateway API Helper - X3 API integration, authentication, request handling
+    sage/xtrem-x3-gateway/api-helper:
+      level: info
+
+    # X3 Dictionary Helper - metadata operations, schema generation, node creation
+    sage/xtrem-x3-dictionary/x3-dictionary-helper:
+      level: warn
+
+    # X3 Package Generator - TypeScript code generation, file operations
+    sage/xtrem-x3-dictionary/xtrem-package-generator:
+      level: warn
+
+    # X3 Gateway Web Service - SOAP integration, X3 web service calls
+    sage/xtrem-x3-gateway/web-service:
+      level: info
+
+    # X3 Node Class Generator - Node class generation, property mapping
+    sage/xtrem-x3-dictionary/x3-node-class-generator:
+      level: warn
+
+    # Xtrem Service Core - Core service operations, lifecycle management
+    sage/xtrem-service/core:
+      level: info
+
+# =============================================================================
+# X3 SQL DEVELOPMENT CONFIGURATION
+# =============================================================================
+
+# Main X3 configuration block for local development
+x3:
+  # ==========================================================================
+  # DATABASE CONFIGURATION
+  # ==========================================================================
+
+  # SQL database configuration for local X3 development
+  sql:
+    # Database driver - specify your X3 database type
+    # Options: 'tedious' (SQL Server) | 'oracle' (Oracle Database)
+    # Replace <DRIVER> with: tedious or oracle
+    driver: <DRIVER>
+
+    # Database server hostname or IP address
+    # Examples: 'localhost', '192.168.1.100', 'x3-server.local'
+    # For SQL Server with instance: 'localhost\SQLEXPRESS'
+    hostname: <DB_HOST>
+
+    # Database server port
+    # Default ports: 1433 (SQL Server), 1521 (Oracle)
+    port: <DB_PORT>
+
+    # Database name or instance identifier
+    # SQL Server: database name (e.g., 'X3Database', 'SAGE_X3')
+    # Oracle: service name or SID (e.g., 'xe', 'orcl', 'X3DB')
+    database: <DB_INSTANCE>
+
+    # Database username for X3 connection
+    # Should have appropriate X3 table access permissions
+    user: <DB_USER>
+
+    # Database password for the specified user
+    # Store securely - consider using environment variables in practice
+    password: <DB_USER_PASSWORD>
+
+    # Connection pool size for development
+    # Keep low for local development to conserve resources
+    poolSize: 20
+
+  # ==========================================================================
+  # DEVELOPMENT ENVIRONMENT CONFIGURATION
+  # ==========================================================================
+
+  # Development-specific settings for X3 integration
+  development:
+    # X3 folder name - the X3 environment/folder being accessed
+    # This is the main X3 folder containing your business data
+    # Examples: 'SEED', 'TEST', 'DEMO', 'REPOSX3', 'FOLDEV'
+    folderName: <SELECTED_FOLDER>
+
+    # Reference folder for X3 development and schema references
+    # Typically the base folder containing metadata and reference data
+    # Often matches folderName or uses 'X3' for standard reference
+    referenceFolder: <REFERENCE_FOLDER>
+
+    # Default language code for X3 operations and data
+    # Standard X3 language codes: 'ENG', 'FRA', 'ESP', 'DEU', 'ITA'
+    # Must match available languages in your X3 installation
+    defaultLanguage: <CURRENT_LANG>
+
+    # Multi-worker service configuration for development
+    # Set to true to disable multi-worker processing for easier debugging
+    # Single-threaded execution makes debugging and logging clearer
+    # Set to false for production-like performance testing
+    multiWorkerServiceDisabled: true
+
+    # ========================================================================
+    # X3 REST API CONFIGURATION (Optional for basic SQL development)
+    # ========================================================================
+
+    # X3 API configuration for REST service integration
+    # Comment out if not using X3 API services in development
+    api:
+      # X3 API endpoint URL for your local or development server
+      # Format: 'http://hostname:port/xtrem/mutation'
+      # Example: 'http://localhost:8124/xtrem/mutation'
+      url: <API_URL>
+
+      # API secret for development - can be a simple string for local dev
+      # Used for API request signing and validation
+      secret: 'dev-secret-key'
+
+      # User credentials for X3 API authentication
+      userCredentials:
+        # X3 API username - typically 'admin' for development
+        userName: admin
+
+        # X3 API password - typically 'admin' for development
+        password: admin
+
+      # API timeout in milliseconds for development
+      # Lower timeout for faster feedback during development
+      timeout: 30000
+
+    # ========================================================================
+    # X3 SOAP WEB SERVICE CONFIGURATION (Optional for basic SQL development)
+    # ========================================================================
+
+    # SOAP web service configuration for X3 integration
+    # Comment out if not using SOAP services in development
+    soap:
+      # SOAP web service URL for your local or development server
+      # Format: 'http://hostname:port/soap-generic/syracuse/collaboration/syracuse/CAdxWebServiceXmlCC'
+      # Example: 'http://localhost:8124/soap-generic/syracuse/collaboration/syracuse/CAdxWebServiceXmlCC'
+      webServiceURL: <SOAP_URL>
+
+      # User credentials for SOAP authentication
+      userCredentials:
+        # SOAP service username - typically 'admin' for development
+        userName: <SOAP_USERNAME>
+
+        # SOAP service password - typically 'admin' for development
+        password: <SOAP_PASSWORD>
+
+      # Language code for SOAP requests - must match X3 language configuration
+      # Should align with defaultLanguage setting above
+      codeLang: <CURRENT_LANG>
+
+      # Pool alias for SOAP connection pooling
+      # Should match the X3 folder name for consistency
+      poolAlias: <SELECTED_FOLDER>
+
+      # SOAP request timeout in milliseconds
+      # Higher values for complex X3 operations
+      timeout: 50000

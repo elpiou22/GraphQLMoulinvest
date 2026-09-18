@@ -1,0 +1,16 @@
+/node_modules/
+/logs/
+/sage-packages/
+**/node_modules/
+**/build/
+
+/shared/admin-specifiques-sra/package.json
+
+/xtrem-config.yml
+/shared.zip
+/package.json.before-*
+
+*.log
+*.zip
+.env
+.env.*

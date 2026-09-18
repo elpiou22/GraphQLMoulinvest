@@ -1,0 +1,38 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "target": "es2022",
+        "lib": ["es2022", "dom"],
+        "composite": true,
+        "sourceMap": true,
+        "declaration": true,
+        "declarationMap": true,
+        "noUnusedLocals": false,
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "strictNullChecks": true,
+        "experimentalDecorators": true,
+        "stripInternal": true,
+        "skipLibCheck": true,
+        "useDefineForClassFields": false,
+        "disableReferencedProjectLoad": true,
+        "outDir": "build",
+        "rootDir": ".",
+        "baseUrl": "."
+    },
+    "compileOnSave": true,
+    "include": ["index.ts", "application.ts", "lib/**/*", "test/**/*.ts", "test/**/*.json", "api/api.d.ts"],
+    "exclude": [
+        "lib/pages/**/*",
+        "lib/page-extensions/**/*",
+        "lib/page-fragments/**/*",
+        "lib/widgets/**/*",
+        "lib/stickers/**/*",
+        "lib/i18n/**/*",
+        "**/*.feature",
+        "**/*.png",
+        "lib/client-functions/**/*"
+    ],
+    "references": []
+}

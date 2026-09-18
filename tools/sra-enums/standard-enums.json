@@ -1,0 +1,115 @@
+{
+  "202": {
+    "rootPackageName": "@sage/x3-system",
+    "rootName": "ExchangeRateType",
+    "rootDataTypeName": "exchangeRateTypeDatatype",
+    "filename": "exchange-rate-type",
+    "acceptedNames": [
+      "exchangeRateType",
+      "ExchangeRateType"
+    ],
+    "values": {
+      "1": "dailyRate",
+      "2": "monthlyRate",
+      "3": "averageRate",
+      "4": "customsDocFileExchange",
+      "5": "ueRate"
+    }
+  },
+  "220": {
+    "rootPackageName": "@sage/x3-master-data",
+    "rootName": "PriceUpdateMode",
+    "rootDataTypeName": "priceUpdateModeDatatype",
+    "filename": "price-update-mode",
+    "acceptedNames": [
+      "priceUpdateMode",
+      "PriceUpdateMode"
+    ],
+    "values": {
+      "1": "calculated",
+      "2": "entered"
+    }
+  },
+  "224": {
+    "rootPackageName": "@sage/x3-master-data",
+    "rootName": "BomCodeType",
+    "rootDataTypeName": "bomCodeTypeDatatype",
+    "filename": "bom-code-type",
+    "acceptedNames": [
+      "bomCodeType",
+      "BomCodeType"
+    ],
+    "values": {
+      "1": "salesKit",
+      "2": "manufacturing",
+      "3": "subcontracting"
+    }
+  },
+  "701": {
+    "rootPackageName": "@sage/x3-stock-data",
+    "rootName": "EntryTypeEnum",
+    "rootDataTypeName": "entryTypeEnumDatatype",
+    "filename": "entry-type-enum",
+    "acceptedNames": [
+      "entryType",
+      "EntryType",
+      "EntryTypeEnum"
+    ],
+    "values": {
+      "1": "customer",
+      "2": "salesOrder",
+      "3": "picking",
+      "4": "delivery",
+      "5": "salesInvoice",
+      "6": "receipt",
+      "7": "transferInactive",
+      "8": "supplierReturn",
+      "9": "count",
+      "10": "workOrder",
+      "11": "suggestion",
+      "12": "productionTracking",
+      "13": "customerReturn",
+      "14": "purchaseOrder",
+      "15": "productionDeclaration",
+      "16": "miscellaneousStockInactive",
+      "17": "supplierInvoice",
+      "18": "salesCredit",
+      "19": "miscellaneousReceipt",
+      "20": "miscellaneousIssue",
+      "21": "locationChangeInactive",
+      "22": "intersiteTransferInactive",
+      "23": "intersiteTransferReceiptInactive",
+      "24": "transferForSubcontractingInactive",
+      "25": "receiptForSubcontractingInactive",
+      "26": "returnToStockInactive",
+      "27": "putawayPlan",
+      "28": "qualityControl",
+      "29": "stockChange",
+      "30": "valueChange",
+      "31": "assembly",
+      "32": "disassembly",
+      "33": "serviceRequest",
+      "34": "reorderPlan",
+      "35": "lotModification",
+      "36": "subcontractOrder",
+      "37": "trackingWoWo",
+      "38": "shipment",
+      "39": "transport",
+      "40": "project"
+    }
+  },
+  "2731": {
+    "rootPackageName": "@sage/x3-stock-data",
+    "rootName": "LineType2731",
+    "rootDataTypeName": "lineType2731Datatype",
+    "filename": "line-type-2731",
+    "acceptedNames": [
+      "lineType2731",
+      "LineType2731"
+    ],
+    "values": {
+      "1": "parentProduct",
+      "2": "component"
+    }
+  }
+}
