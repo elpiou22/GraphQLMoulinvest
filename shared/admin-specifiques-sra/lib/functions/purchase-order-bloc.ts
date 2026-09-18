@@ -141,7 +141,7 @@ export async function purchaseOrderBloc(
         }
 
         const headerData = buildHeaderUpdate(parameters);
-        let existingLine: sageX3Purchasing.nodes.PurchaseOrderLine | undefined;
+        let existingLine: sageX3Purchasing.nodes.PurchaseOrderLine | null = null;
 
         if (xylolinkLineId) {
             existingLine = await purchaseOrder.purchaseOrderLines.takeOne(
