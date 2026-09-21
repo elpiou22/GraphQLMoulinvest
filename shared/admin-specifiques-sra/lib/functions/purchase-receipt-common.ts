@@ -79,7 +79,8 @@ async function getPurchaseOrderLineData(
 ): Promise<{ lineNumber: number; sequenceNumber: number; productCode: string }> {
     const lineNumber = await purchaseOrderLine.lineNumber;
     const sequenceNumber = await purchaseOrderLine.sequenceNumber;
-    const productCode = await purchaseOrderLine.product.code;
+    const product = await purchaseOrderLine.product;
+    const productCode = product ? await product.code : '';
 
     if (lineNumber === null || lineNumber === undefined) {
         throw new Error("Numero de ligne de commande d'achat introuvable.");
@@ -213,7 +214,8 @@ export async function executePurchaseReceipt(
 
         if (existingLine) {
             if (options.expectedProductCode) {
-                const existingProductCode = await existingLine.product.code;
+                const existingProduct = await existingLine.product;
+                const existingProductCode = existingProduct ? await existingProduct.code : '';
                 if (existingProductCode !== options.expectedProductCode) {
                     throw new Error(
                         `Article incoherent dans la reception : reception=${existingProductCode}, attendu=${options.expectedProductCode}.`,
