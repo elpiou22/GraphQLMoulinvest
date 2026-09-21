@@ -3,3 +3,6 @@ export * from "./create-miscellaneous-receipt-from-stats";
 export * from "./purchase-order-bloc";
 export * from "./purchase-order-up";
 export * from "./purchase-order-presta";
+export * from "./purchase-receipt-bloc";
+export * from "./purchase-receipt-up";
+export * from "./purchase-receipt-presta";
