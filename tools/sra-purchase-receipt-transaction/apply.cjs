@@ -24,18 +24,26 @@ function apply() {
     writeIfChanged(target, fs.readFileSync(source, "utf8"));
 
     const originalIndex = fs.readFileSync(index, "utf8");
-    if (originalIndex.includes(exportLine)) {
-        console.log("SRA purchase receipt transaction input already installed.");
-        return;
+    const anchor = "export * from './purchase-receipt-line-extension';";
+    const lineBreak = originalIndex.includes("\r\n") ? "\r\n" : "\n";
+    const indexLines = originalIndex
+        .split(/\r?\n/)
+        .filter((line) => line !== exportLine);
+    const anchorIndex = indexLines.indexOf(anchor);
+
+    if (anchorIndex >= 0) {
+        indexLines.splice(anchorIndex, 0, exportLine);
+    } else {
+        const trailingEmptyLine = indexLines.at(-1) === "";
+        if (trailingEmptyLine) indexLines.pop();
+        indexLines.push(exportLine);
+        if (trailingEmptyLine) indexLines.push("");
     }
 
-    const anchor = "export * from './purchase-receipt-line-extension';";
-    const updatedIndex = originalIndex.includes(anchor)
-        ? originalIndex.replace(anchor, `${anchor}\n${exportLine}`)
-        : `${originalIndex.trimEnd()}\n${exportLine}\n`;
+    const updatedIndex = indexLines.join(lineBreak);
 
     writeIfChanged(index, updatedIndex);
-    console.log("SRA purchase receipt _x3Transaction input installed.");
+    console.log("SRA purchase receipt _x3Transaction input installed and ordered.");
 }
 
 if (require.main === module) {
