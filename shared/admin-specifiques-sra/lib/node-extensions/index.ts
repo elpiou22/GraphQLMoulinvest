@@ -9,6 +9,7 @@ export * from './prospect-contact-extension';
 export * from './purchase-order-extension';
 export * from './purchase-order-line-extension';
 export * from './purchase-receipt-line-extension';
+export * from './purchase-receipt-extension';
 export * from './site-contact-extension';
 export * from './supplier-contact-extension';
 export * from './supplier-extension';
