@@ -10,6 +10,7 @@
     "clean:unix": "rmdir node_modules /s /q || exit 0",
     "clean:install:unix": "rm -rf node_modules && npm ci --omit=dev",
     "generate": "xtrem x3-dev generate --specific-only --service-name x3",
+    "postgenerate": "node tools/sra-purchase-receipt-transaction/apply.cjs",
     "generate-translations": "xtrem x3-dev generate --specific-only --translations --service-name x3",
     "generate-deployment": "xtrem x3-dev generate-deployment",
     "postinstall": "npx --yes patch-package && node tools/sra-enums/apply.cjs",
