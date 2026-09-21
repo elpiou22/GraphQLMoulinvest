@@ -5,6 +5,7 @@
 **/build/
 
 /shared/admin-specifiques-sra/package.json
+/shared/admin-specifiques-sra/lib/node-extensions/purchase-receipt-extension.ts
 
 /xtrem-config.yml
 /shared.zip
