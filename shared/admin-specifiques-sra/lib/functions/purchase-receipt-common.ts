@@ -3,7 +3,7 @@ import { Context, DateValue, decimal } from '@sage/xtrem-core';
 
 export interface PurchaseReceiptCommonParameters {
     existingPurchaseReceiptId?: string;
-    transaction: string;
+    transaction?: string;
     receiptDate?: DateValue;
     supplierCode?: string;
     supplierPackingSlip?: string;
