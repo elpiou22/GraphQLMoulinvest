@@ -3,6 +3,7 @@ import { Context, DateValue, decimal } from '@sage/xtrem-core';
 
 export interface PurchaseReceiptCommonParameters {
     existingPurchaseReceiptId?: string;
+    transaction: string;
     receiptDate?: DateValue;
     supplierCode?: string;
     supplierPackingSlip?: string;
@@ -38,6 +39,14 @@ function requiredString(value: string | undefined, name: string): string {
     const result = cleanPurchaseReceiptValue(value);
     if (!result) {
         throw new Error(`Parametre obligatoire pour la creation : ${name}`);
+    }
+    return result;
+}
+
+function requiredTransaction(value: string | undefined): string {
+    const result = cleanPurchaseReceiptValue(value);
+    if (!result) {
+        throw new Error('Parametre obligatoire : transaction');
     }
     return result;
 }
@@ -145,8 +154,8 @@ function buildReceiptLine(
     };
 }
 
-function buildHeaderUpdate(parameters: PurchaseReceiptCommonParameters): Record<string, any> {
-    const data: Record<string, any> = { _x3Transaction: 'ALL' };
+function buildHeaderUpdate(parameters: PurchaseReceiptCommonParameters, transaction: string): Record<string, any> {
+    const data: Record<string, any> = { _x3Transaction: transaction };
     const supplierCode = cleanPurchaseReceiptValue(parameters.supplierCode);
     const supplierPackingSlip = cleanPurchaseReceiptValue(parameters.supplierPackingSlip);
 
@@ -188,6 +197,7 @@ export async function executePurchaseReceipt(
     parameters: PurchaseReceiptCommonParameters,
     options: ExecutePurchaseReceiptOptions,
 ): Promise<PurchaseReceiptCommonResult> {
+    const transaction = requiredTransaction(parameters.transaction);
     const existingPurchaseReceiptId = cleanPurchaseReceiptValue(parameters.existingPurchaseReceiptId);
     const purchaseOrderId = cleanPurchaseReceiptValue(parameters.purchaseOrderId);
     const xylolinkLineId = cleanPurchaseReceiptValue(parameters.xylolinkLineId);
@@ -203,7 +213,7 @@ export async function executePurchaseReceipt(
             throw new Error(`Reception d'achat introuvable : ${existingPurchaseReceiptId}`);
         }
 
-        const headerData = buildHeaderUpdate(parameters);
+        const headerData = buildHeaderUpdate(parameters, transaction);
         let existingLine: sageX3Purchasing.nodes.PurchaseReceiptLine | null = null;
 
         if (xylolinkLineId) {
@@ -287,7 +297,7 @@ export async function executePurchaseReceipt(
     );
 
     const purchaseReceipt = await context.create(sageX3Purchasing.nodes.PurchaseReceipt, {
-        _x3Transaction: 'ALL',
+        _x3Transaction: transaction,
         company: COMPANY,
         receiptSite: RECEIPT_SITE,
         receiptDate,

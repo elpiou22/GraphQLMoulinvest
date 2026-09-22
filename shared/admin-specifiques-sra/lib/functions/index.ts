@@ -6,3 +6,4 @@ export * from "./purchase-order-presta";
 export * from "./purchase-receipt-bloc";
 export * from "./purchase-receipt-up";
 export * from "./purchase-receipt-presta";
+export * from "./purchase-receipt-delete";
