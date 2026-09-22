@@ -1,5 +1,5 @@
 param(
-    [string]$ProjectRoot = "C:\Users\damien.chamerlin\Desktop\SRA_DEV_GRAPHQL\x3-services-dev-studio-64.0.82.2298115",
+    [string]$ProjectRoot = "C:\Users\macéo.fauchier\Desktop\SRA_DEV_GRAPHQL\x3-services-dev-studio-64.0.82.2298115",
     [string]$TargetRoot = '\\EC2PSRAMOULX3F1\d$\sage\X3Services\add-ons\DEV\@ADMIN\admin-specifiques-sra',
     [string]$ServerName = "EC2PSRAMOULX3F1",
     [string]$ServiceIdentifier = "Sage X3 Services SERVICE"
