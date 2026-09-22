@@ -231,7 +231,13 @@ export async function executePurchaseReceipt(
                 },
             ];
         } else if (xylolinkLineId) {
-            const requiredPurchaseOrderId = requiredString(parameters.purchaseOrderId, 'purchaseOrderId');
+            const requiredPurchaseOrderId = cleanPurchaseReceiptValue(parameters.purchaseOrderId);
+            if (!requiredPurchaseOrderId) {
+                throw new Error(
+                    `Ligne Xylolink introuvable dans la reception ${existingPurchaseReceiptId} : ${xylolinkLineId}. ` +
+                        'Verifiez xylolinkLineId ou renseignez purchaseOrderId pour ajouter une nouvelle ligne.',
+                );
+            }
             const purchaseOrderLine = await findPurchaseOrderLine(context, requiredPurchaseOrderId, xylolinkLineId);
             const line = await getPurchaseOrderLineData(purchaseOrderLine, options.expectedProductCode);
 
