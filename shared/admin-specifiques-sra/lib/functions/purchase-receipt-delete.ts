@@ -10,7 +10,7 @@ export interface PurchaseReceiptDeleteParameters {
 export interface PurchaseReceiptDeleteResult {
     deleted?: number;
     message?: string;
-    purchaseReceiptId?: string;
+    purchaseReceiptId: string;
 }
 
 export async function purchaseReceiptDelete(
@@ -21,7 +21,11 @@ export async function purchaseReceiptDelete(
     const transaction = parameters.transaction?.trim() ?? '';
 
     if (!purchaseReceiptId) {
-        return { deleted: 0, message: 'Parametre obligatoire : purchaseReceiptId' };
+        return {
+            deleted: 0,
+            message: 'Parametre obligatoire : purchaseReceiptId',
+            purchaseReceiptId: '',
+        };
     }
     if (!transaction) {
         return {
