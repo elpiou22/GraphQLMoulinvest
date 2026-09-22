@@ -3,6 +3,7 @@ import { Context } from '@sage/xtrem-core';
 import {
     cleanPurchaseReceiptValue,
     executePurchaseReceipt,
+    formatPurchaseReceiptError,
     PurchaseReceiptCommonParameters,
     PurchaseReceiptCommonResult,
 } from './purchase-receipt-common';
@@ -64,7 +65,7 @@ export async function purchaseReceiptPresta(
     } catch (error) {
         return {
             created: 0,
-            message: error instanceof Error ? error.message : String(error),
+            message: formatPurchaseReceiptError(error, parameters.transaction),
             purchaseReceiptId: existingPurchaseReceiptId,
             resolvedProductCode,
         };

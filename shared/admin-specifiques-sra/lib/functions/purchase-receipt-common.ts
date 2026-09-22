@@ -35,6 +35,37 @@ export function cleanPurchaseReceiptValue(value?: string): string {
     return value?.trim() ?? '';
 }
 
+export function formatPurchaseReceiptError(error: unknown, transaction?: string): string {
+    if (error && typeof error === 'object') {
+        const candidate = error as {
+            message?: unknown;
+            response?: { status?: unknown; data?: unknown };
+        };
+        const responseData = candidate.response?.data;
+
+        if (typeof responseData === 'string' && responseData.trim()) {
+            return responseData.trim();
+        }
+        if (responseData && typeof responseData === 'object') {
+            const dataMessage = (responseData as { message?: unknown }).message;
+            if (typeof dataMessage === 'string' && dataMessage.trim()) {
+                return dataMessage.trim();
+            }
+        }
+
+        if (candidate.response?.status === 500) {
+            const suffix = transaction ? ` avec la transaction "${transaction}"` : '';
+            return `Erreur X3 (HTTP 500) pendant le traitement de la reception${suffix}. ` +
+                "Verifiez la transaction et consultez la trace X3 pour le diagnostic detaille.";
+        }
+        if (typeof candidate.message === 'string' && candidate.message.trim()) {
+            return candidate.message.trim();
+        }
+    }
+
+    return error instanceof Error ? error.message : String(error);
+}
+
 function requiredString(value: string | undefined, name: string): string {
     const result = cleanPurchaseReceiptValue(value);
     if (!result) {

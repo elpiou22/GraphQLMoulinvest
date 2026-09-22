@@ -1,5 +1,6 @@
 import * as sageX3Purchasing from '@sage/x3-purchasing';
 import { Context } from '@sage/xtrem-core';
+import { formatPurchaseReceiptError } from './purchase-receipt-common';
 
 export interface PurchaseReceiptDeleteParameters {
     purchaseReceiptId: string;
@@ -57,7 +58,7 @@ export async function purchaseReceiptDelete(
     } catch (error) {
         return {
             deleted: 0,
-            message: error instanceof Error ? error.message : String(error),
+            message: formatPurchaseReceiptError(error, transaction),
             purchaseReceiptId,
         };
     }
