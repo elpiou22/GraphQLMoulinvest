@@ -141,12 +141,20 @@ Get-ChildItem -LiteralPath $ResolvedTarget -Force |
     Format-Table -AutoSize
 
 Write-Host "[7/7] Redemarrage du service Sage X3 sur $ServerName..." -ForegroundColor Cyan
+try {
+    $RemoteServices = [System.ServiceProcess.ServiceController]::GetServices(
+        $ServerName
+    )
+}
+catch {
+    throw "Impossible de lire les services sur $ServerName : $($_.Exception.Message)"
+}
+
 $MatchingServices = @(
-    Get-Service -ComputerName $ServerName -ErrorAction Stop |
-        Where-Object {
-            $_.Name -ieq $ServiceIdentifier -or
-            $_.DisplayName -ieq $ServiceIdentifier
-        }
+    $RemoteServices | Where-Object {
+        $_.ServiceName -ieq $ServiceIdentifier -or
+        $_.DisplayName -ieq $ServiceIdentifier
+    }
 )
 
 if ($MatchingServices.Count -eq 0) {
@@ -154,7 +162,7 @@ if ($MatchingServices.Count -eq 0) {
 }
 
 if ($MatchingServices.Count -gt 1) {
-    $Names = ($MatchingServices | ForEach-Object { $_.Name }) -join ", "
+    $Names = ($MatchingServices | ForEach-Object { $_.ServiceName }) -join ", "
     throw "Plusieurs services correspondent a '$ServiceIdentifier' sur $ServerName : $Names"
 }
 
