@@ -65,12 +65,9 @@ async function resolveProductCode(
                 },
             },
             {
-                statisticalGroups: {
-                    _atLeast: 1,
-                    denormalizedIndex: 6,
-                    statisticalGroup: dimensionCode,
-                },
-            },
+                // YITMCAR1 is exposed by the Product node as statisticalGroupSpe1.
+                statisticalGroupSpe1: dimensionCode,
+            } as any,
         ],
     };
 
