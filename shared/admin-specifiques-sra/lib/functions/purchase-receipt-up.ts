@@ -1,5 +1,5 @@
 import * as sageX3MasterData from '@sage/x3-master-data';
-import { Context } from '@sage/xtrem-core';
+import { Context, NodeQueryFilter } from '@sage/xtrem-core';
 import {
     cleanPurchaseReceiptValue,
     executePurchaseReceipt,
@@ -9,9 +9,11 @@ import {
 } from './purchase-receipt-common';
 
 export interface PurchaseReceiptUpParameters extends PurchaseReceiptCommonParameters {
-    productCode?: string;
+    productCategory?: string;
+    specyCode?: string;
+    lengthCode?: string;
     qualityCode?: string;
-    speciesCode?: string;
+    dimensionCode?: string;
 }
 
 export interface PurchaseReceiptUpResult extends PurchaseReceiptCommonResult {
@@ -23,29 +25,77 @@ async function resolveProductCode(
     parameters: PurchaseReceiptUpParameters,
     required: boolean,
 ): Promise<string> {
-    const productCode = cleanPurchaseReceiptValue(parameters.productCode);
+    const productCategory = cleanPurchaseReceiptValue(parameters.productCategory);
+    const specyCode = cleanPurchaseReceiptValue(parameters.specyCode);
+    const lengthCode = cleanPurchaseReceiptValue(parameters.lengthCode);
     const qualityCode = cleanPurchaseReceiptValue(parameters.qualityCode);
-    const speciesCode = cleanPurchaseReceiptValue(parameters.speciesCode);
-    const baseCode = productCode || qualityCode;
+    const dimensionCode = cleanPurchaseReceiptValue(parameters.dimensionCode);
 
-    if (!baseCode && !speciesCode && !required) {
+    if (!productCategory && !specyCode && !lengthCode && !qualityCode && !dimensionCode && !required) {
         return '';
     }
-    if (!baseCode) {
-        throw new Error('productCode ou qualityCode doit etre renseigne.');
-    }
-    if (!speciesCode) {
-        throw new Error('speciesCode doit etre renseigne.');
-    }
-
-    const resolvedProductCode = baseCode + speciesCode;
-    const productExists = await context.exists(sageX3MasterData.nodes.Product, { code: resolvedProductCode });
-
-    if (!productExists) {
-        throw new Error(`Article X3 introuvable : ${resolvedProductCode}`);
+    if (!productCategory || !specyCode || !lengthCode || !qualityCode || !dimensionCode) {
+        throw new Error(
+            'productCategory et les familles statistiques 1, 2, 3 et 6 doivent etre renseignees.',
+        );
     }
 
-    return resolvedProductCode;
+    const filter: NodeQueryFilter<sageX3MasterData.nodes.Product> = {
+        _and: [
+            { productCategory },
+            {
+                statisticalGroups: {
+                    _atLeast: 1,
+                    denormalizedIndex: 1,
+                    statisticalGroup: specyCode,
+                },
+            },
+            {
+                statisticalGroups: {
+                    _atLeast: 1,
+                    denormalizedIndex: 2,
+                    statisticalGroup: lengthCode,
+                },
+            },
+            {
+                statisticalGroups: {
+                    _atLeast: 1,
+                    denormalizedIndex: 3,
+                    statisticalGroup: qualityCode,
+                },
+            },
+            {
+                statisticalGroups: {
+                    _atLeast: 1,
+                    denormalizedIndex: 6,
+                    statisticalGroup: dimensionCode,
+                },
+            },
+        ],
+    };
+
+    const matchCount = await context.queryCount(sageX3MasterData.nodes.Product, { filter });
+
+    if (matchCount === 0) {
+        throw new Error('Aucun article X3 ne correspond aux familles statistiques renseignees.');
+    }
+    if (matchCount > 1) {
+        throw new Error(`Plusieurs articles X3 correspondent aux familles statistiques : ${matchCount}.`);
+    }
+
+    const products = await context
+        .query(sageX3MasterData.nodes.Product, {
+            filter,
+            first: 1,
+        })
+        .toArray();
+    const product = products[0];
+
+    if (!product) {
+        throw new Error('Article X3 introuvable apres recherche par familles statistiques.');
+    }
+
+    return await product.code;
 }
 
 export async function purchaseReceiptUp(

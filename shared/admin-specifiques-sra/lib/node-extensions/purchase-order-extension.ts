@@ -208,12 +208,11 @@ export class PurchaseOrderExtension extends NodeExtension<sageX3Purchasing.nodes
                         isMandatory: true,
                         type: 'string',
                     },
-                    productCode: 'string',
+                    productCategory: 'string',
+                    specyCode: 'string',
+                    lengthCode: 'string',
                     qualityCode: 'string',
-                    speciesCode: {
-                        isMandatory: true,
-                        type: 'string',
-                    },
+                    dimensionCode: 'string',
                     orderUnit: {
                         isMandatory: true,
                         type: 'string',
@@ -252,9 +251,11 @@ export class PurchaseOrderExtension extends NodeExtension<sageX3Purchasing.nodes
             supplierCode: string;
             cuttingId: string;
             xylolinkLineId: string;
-            productCode?: string;
+            productCategory?: string;
+            specyCode?: string;
+            lengthCode?: string;
             qualityCode?: string;
-            speciesCode: string;
+            dimensionCode?: string;
             orderUnit: string;
             quantity: decimal;
             expectedReceiptDate: DateValue;

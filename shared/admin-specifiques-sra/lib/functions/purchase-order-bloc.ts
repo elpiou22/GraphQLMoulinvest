@@ -25,7 +25,7 @@ const COMPANY = '02';
 const PURCHASE_SITE = '0201';
 const RECEIPT_ADDRESS = 'SS1';
 const CURRENCY = 'EUR';
-const DEFAULT_PRODUCT = 'PAG103';
+const DEFAULT_PRODUCT = 'FOR-BLOC';
 const TAX = '001';
 
 function clean(value?: string): string {

@@ -13,7 +13,7 @@ export interface PurchaseReceiptBlocParameters extends PurchaseReceiptCommonPara
 
 export interface PurchaseReceiptBlocResult extends PurchaseReceiptCommonResult {}
 
-const DEFAULT_PRODUCT = 'PAG103';
+const DEFAULT_PRODUCT = 'FOR-BLOC';
 
 export async function purchaseReceiptBloc(
     context: Context,
