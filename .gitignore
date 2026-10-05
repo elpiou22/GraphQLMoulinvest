@@ -6,6 +6,7 @@
 
 /shared/admin-specifiques-sra/package.json
 /shared/admin-specifiques-sra/lib/node-extensions
+/shared/admin-specifiques-sra/lib/nodes
 
 /xtrem-config.yml
 /shared.zip
