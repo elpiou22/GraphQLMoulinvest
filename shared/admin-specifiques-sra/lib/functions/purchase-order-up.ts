@@ -101,9 +101,12 @@ async function resolveProductCode(
                 },
             },
             {
-                // YITMCAR1 is exposed by the Product node as statisticalGroupSpe1.
-                statisticalGroupSpe1: dimensionCode,
-            } as any,
+                statisticalGroupsSpe: {
+                    _atLeast: 1,
+                    denormalizedIndex: 1,
+                    statisticalGroupSpe1: dimensionCode,
+                },
+            }
         ],
     };
 
