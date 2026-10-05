@@ -36,7 +36,7 @@ async function resolveProductCode(
     }
     if (!productCategory || !specyCode || !lengthCode || !qualityCode || !dimensionCode) {
         throw new Error(
-            'productCategory et les familles statistiques 1, 2, 3 et 6 doivent etre renseignees.',
+            'productCategory, les familles statistiques 1, 2, 3 et la dimension doivent etre renseignees.',
         );
     }
 
@@ -65,9 +65,12 @@ async function resolveProductCode(
                 },
             },
             {
-                // YITMCAR1 is exposed by the Product node as statisticalGroupSpe1.
-                statisticalGroupSpe1: dimensionCode,
-            } as any,
+                statisticalGroupsSpe: {
+                    _atLeast: 1,
+                    denormalizedIndex: 1,
+                    statisticalGroupSpe: dimensionCode,
+                },
+            },
         ],
     };
 

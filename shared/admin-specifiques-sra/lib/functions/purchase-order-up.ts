@@ -70,7 +70,7 @@ async function resolveProductCode(
 
     if (!specyCode || !lengthCode || !qualityCode || !dimensionCode || !productCategory) {
         throw new Error(
-            'productCategory ou les familles statistiques 1, 2, 3 et 6 doivent etre renseignees.',
+            'productCategory, les familles statistiques 1, 2, 3 et la dimension doivent etre renseignees.',
         );
     }
 
@@ -104,7 +104,7 @@ async function resolveProductCode(
                 statisticalGroupsSpe: {
                     _atLeast: 1,
                     denormalizedIndex: 1,
-                    statisticalGroupSpe1: dimensionCode,
+                    statisticalGroupSpe: dimensionCode,
                 },
             }
         ],
