@@ -179,7 +179,7 @@ function buildLineUpdate(parameters: PurchaseOrderUpParameters, resolvedProductC
     const pefcValue = clean(parameters.pefcValue);
     if (pefcValue) {
         data.pefcValue = pefcValue;
-        data.isPefc = 2;
+        data.isPefc = true;
     }
 
     return data;
@@ -217,7 +217,7 @@ function buildNewLine(parameters: PurchaseOrderUpParameters, resolvedProductCode
 
     if (pefcValue) {
         data.pefcValue = pefcValue;
-        data.isPefc = 2;
+        data.isPefc = true;
     }
 
     return data;

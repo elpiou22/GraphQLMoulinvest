@@ -83,7 +83,7 @@ function buildNewLine(
 
     if (pefcValue) {
         data.pefcValue = pefcValue;
-        data.isPefc = 2;
+        data.isPefc = true;
     }
 
     return data;
@@ -130,7 +130,7 @@ function buildLineUpdate(parameters: PurchaseOrderBlocParameters): Record<string
     const pefcValue = clean(parameters.pefcValue);
     if (pefcValue) {
         data.pefcValue = pefcValue;
-        data.isPefc = 2;
+        data.isPefc = true;
     }
 
     return data;
