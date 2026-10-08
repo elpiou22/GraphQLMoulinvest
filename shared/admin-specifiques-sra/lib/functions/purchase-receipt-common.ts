@@ -11,6 +11,7 @@ export interface PurchaseReceiptCommonParameters {
     xylolinkLineId?: string;
     receiptUnit?: string;
     quantity?: decimal;
+    pefcValue?: string;
 }
 
 export interface PurchaseReceiptCommonResult {
@@ -157,12 +158,13 @@ function buildReceiptLine(
     const xylolinkLineId = requiredString(parameters.xylolinkLineId, 'xylolinkLineId');
     const receiptUnit = requiredString(parameters.receiptUnit, 'receiptUnit');
     const quantity = parameters.quantity ?? options.defaultQuantity;
+    const pefcValue = cleanPurchaseReceiptValue(parameters.pefcValue);
 
     if (quantity === undefined || quantity === null) {
         throw new Error('Parametre obligatoire pour la creation : quantity');
     }
 
-    return {
+    const data: Record<string, any> = {
         company: COMPANY,
         receiptSite: RECEIPT_SITE,
         receiptDate,
@@ -183,6 +185,13 @@ function buildReceiptLine(
         quantityInStockUnitReceived: quantity,
         balance: options.closePurchaseOrderLine ? BALANCE_YES : BALANCE_NO,
     };
+
+    if (pefcValue) {
+        data.pefcValue = pefcValue;
+        data.isPefc = true;
+    }
+
+    return data;
 }
 
 function buildHeaderUpdate(parameters: PurchaseReceiptCommonParameters, transaction: string): Record<string, any> {
@@ -206,6 +215,7 @@ function buildExistingLineUpdate(
     };
     const supplierCode = cleanPurchaseReceiptValue(parameters.supplierCode);
     const receiptUnit = cleanPurchaseReceiptValue(parameters.receiptUnit);
+    const pefcValue = cleanPurchaseReceiptValue(parameters.pefcValue);
 
     if (parameters.receiptDate !== undefined) data.receiptDate = parameters.receiptDate;
     if (supplierCode) data.supplier = supplierCode;
@@ -218,6 +228,10 @@ function buildExistingLineUpdate(
         data.quantityInReceiptUnitReceived = parameters.quantity;
         data.quantityInPurchaseUnitReceived = parameters.quantity;
         data.quantityInStockUnitReceived = parameters.quantity;
+    }
+    if (pefcValue) {
+        data.pefcValue = pefcValue;
+        data.isPefc = true;
     }
 
     return data;

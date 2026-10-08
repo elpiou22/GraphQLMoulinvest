@@ -30,7 +30,7 @@ export class PurchaseReceiptExtension extends NodeExtension<sageX3Purchasing.nod
                 transaction: { isMandatory: true, type: 'string' },
                 existingPurchaseReceiptId: 'string', receiptDate: 'date', supplierCode: 'string',
                 supplierPackingSlip: 'string', purchaseOrderId: 'string', xylolinkLineId: 'string',
-                productCode: 'string', receiptUnit: 'string', quantity: 'decimal',
+                productCode: 'string', receiptUnit: 'string', quantity: 'decimal', pefcValue: 'string',
             },
         }],
         return: { type: 'object', properties: {
@@ -50,6 +50,7 @@ export class PurchaseReceiptExtension extends NodeExtension<sageX3Purchasing.nod
             productCode?: string;
             receiptUnit?: string;
             quantity?: decimal;
+            pefcValue?: string;
         },
     ): Promise<{ created?: number; message?: string; purchaseReceiptId?: string }> {
         return adminAdminSpecifiquesSra.functions.purchaseReceiptBloc(context, parameters);
@@ -64,7 +65,7 @@ export class PurchaseReceiptExtension extends NodeExtension<sageX3Purchasing.nod
                 transaction: { isMandatory: true, type: 'string' },
                 existingPurchaseReceiptId: 'string', receiptDate: 'date', supplierCode: 'string',
                 supplierPackingSlip: 'string', purchaseOrderId: 'string', xylolinkLineId: 'string',
-                category: 'string', receiptUnit: 'string', quantity: 'decimal',
+                category: 'string', receiptUnit: 'string', quantity: 'decimal', pefcValue: 'string',
             },
         }],
         return: { type: 'object', properties: {
@@ -84,6 +85,7 @@ export class PurchaseReceiptExtension extends NodeExtension<sageX3Purchasing.nod
             category?: string;
             receiptUnit?: string;
             quantity?: decimal;
+            pefcValue?: string;
         },
     ): Promise<{
         created?: number;
@@ -104,7 +106,7 @@ export class PurchaseReceiptExtension extends NodeExtension<sageX3Purchasing.nod
                 existingPurchaseReceiptId: 'string', receiptDate: 'date', supplierCode: 'string',
                 supplierPackingSlip: 'string', purchaseOrderId: 'string', xylolinkLineId: 'string',
                 productCategory: 'string', specyCode: 'string', lengthCode: 'string', qualityCode: 'string',
-                dimensionCode: 'string', receiptUnit: 'string', quantity: 'decimal',
+                dimensionCode: 'string', receiptUnit: 'string', quantity: 'decimal', pefcValue: 'string',
             },
         }],
         return: { type: 'object', properties: {
@@ -128,6 +130,7 @@ export class PurchaseReceiptExtension extends NodeExtension<sageX3Purchasing.nod
             dimensionCode?: string;
             receiptUnit?: string;
             quantity?: decimal;
+            pefcValue?: string;
         },
     ): Promise<{
         created?: number;
