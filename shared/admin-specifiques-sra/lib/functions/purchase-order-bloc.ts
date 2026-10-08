@@ -13,6 +13,7 @@ export interface PurchaseOrderBlocParameters {
     quantity?: decimal;
     expectedReceiptDate?: DateValue;
     grossPrice?: decimal;
+    pefcValue?: string;
 }
 
 export interface PurchaseOrderBlocResult {
@@ -58,7 +59,8 @@ function buildNewLine(
     const expectedReceiptDate = requiredValue(parameters.expectedReceiptDate, 'expectedReceiptDate');
     const grossPrice = requiredValue(parameters.grossPrice, 'grossPrice');
 
-    return {
+    const pefcValue = clean(parameters.pefcValue);
+    const data: Record<string, any> = {
         company: COMPANY,
         purchaseSite: PURCHASE_SITE,
         orderFromSupplier: supplierCode,
@@ -78,6 +80,13 @@ function buildNewLine(
         grossPrice,
         netPrice: grossPrice,
     };
+
+    if (pefcValue) {
+        data.pefcValue = pefcValue;
+        data.isPefc = 2;
+    }
+
+    return data;
 }
 
 function buildHeaderUpdate(parameters: PurchaseOrderBlocParameters): Record<string, any> {
@@ -117,6 +126,11 @@ function buildLineUpdate(parameters: PurchaseOrderBlocParameters): Record<string
     if (parameters.grossPrice !== undefined) {
         data.grossPrice = parameters.grossPrice;
         data.netPrice = parameters.grossPrice;
+    }
+    const pefcValue = clean(parameters.pefcValue);
+    if (pefcValue) {
+        data.pefcValue = pefcValue;
+        data.isPefc = 2;
     }
 
     return data;
