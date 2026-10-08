@@ -13,8 +13,8 @@
     "postgenerate": "node tools/sra-purchase-receipt-transaction/apply.cjs",
     "generate-translations": "xtrem x3-dev generate --specific-only --translations --service-name x3",
     "generate-deployment": "xtrem x3-dev generate-deployment",
-    "postinstall": "npx --yes patch-package && node tools/sra-enums/apply.cjs && node tools/sra-purchase-order-composite/apply.cjs",
-    "pregenerate": "node tools/sra-enums/apply.cjs && node tools/sra-purchase-order-composite/apply.cjs"
+    "postinstall": "npx --yes patch-package && node tools/sra-enums/apply.cjs",
+    "pregenerate": "node tools/sra-enums/apply.cjs"
   },
   "keywords": [],
   "author": "",
